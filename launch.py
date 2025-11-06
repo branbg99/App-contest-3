@@ -37,7 +37,11 @@ except Exception:
     pass
 
 from ProjectSearchBar import config  # type: ignore
-from ProjectSearchBar.server_app.server import SearchRequestHandler  # type: ignore
+# Prefer repo-level server (newer, includes Tools endpoints); fall back to packaged
+try:
+    from server_app.server import SearchRequestHandler  # type: ignore
+except Exception:
+    from ProjectSearchBar.server_app.server import SearchRequestHandler  # type: ignore
 
 
 def run_server():
