@@ -413,6 +413,7 @@
         max: dlMax && dlMax.value ? parseInt(dlMax.value, 10) : 5,
         sleep: dlSleep && dlSleep.value ? parseFloat(dlSleep.value) : 3.0,
       };
+      try { const el = document.getElementById('optDlContact'); if (el && el.value) payload.contact = String(el.value||'').trim(); } catch(e) {}
       const r = await fetch('/api/tools/download', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       const j = await r.json();
       if (!(j && j.ok && j.started)) {

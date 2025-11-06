@@ -700,6 +700,7 @@ class SearchRequestHandler(SimpleHTTPRequestHandler):
         max_n = body.get('max')
         from_date = body.get('from') or body.get('from_date') or '2010-01-01'
         until_date = body.get('until') or body.get('until_date') or None
+        contact = (body.get('contact') or '').strip()
         try:
             sleep_s = float(body.get('sleep') or 3.0)
         except Exception:
@@ -747,6 +748,12 @@ class SearchRequestHandler(SimpleHTTPRequestHandler):
             try:
                 from ProjectSearchBar.tools import download as dl
                 out_path.mkdir(parents=True, exist_ok=True)
+                # Provide polite contact to the downloader via UA header
+                try:
+                    if contact:
+                        os.environ['PROJECTSEARCHBAR_CONTACT'] = contact
+                except Exception:
+                    pass
                 total = 0
                 pages = 0
                 skipped = 0
@@ -798,6 +805,11 @@ class SearchRequestHandler(SimpleHTTPRequestHandler):
                 with SearchRequestHandler._dl_lock:
                     SearchRequestHandler._dl_active = False
                     SearchRequestHandler._dl_id = None
+                try:
+                    if contact and os.environ.get('PROJECTSEARCHBAR_CONTACT') == contact:
+                        os.environ.pop('PROJECTSEARCHBAR_CONTACT', None)
+                except Exception:
+                    pass
 
         threading.Thread(target=worker, daemon=True).start()
         return self._write_json({'ok': True, 'started': True, 'out': str(out_path), 'run_id': SearchRequestHandler._dl_id}, 200)
