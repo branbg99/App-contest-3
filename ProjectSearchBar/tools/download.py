@@ -20,13 +20,18 @@ import requests
 import random
 
 from ProjectSearchBar import config
+import os
 
 
-UA = {
-    "User-Agent": "ProjectSearchBar/1.0 (mailto:your-email@example.com)",
-    # Encourage binary content for tarballs
-    "Accept": "application/gzip, application/x-gzip, application/x-tar, application/octet-stream;q=0.9,*/*;q=0.5",
-}
+def _user_agent_headers() -> dict:
+    email = os.environ.get('PROJECTSEARCHBAR_CONTACT', '').strip()
+    has_email = ('@' in email)
+    ua = f"ProjectSearchBar/1.0{f' (mailto:{email})' if has_email else ''}"
+    return {
+        "User-Agent": ua,
+        # Encourage binary content for tarballs
+        "Accept": "application/gzip, application/x-gzip, application/x-tar, application/octet-stream;q=0.9,*/*;q=0.5",
+    }
 OAI_ENDPOINT = "https://export.arxiv.org/oai2"
 ARXIV_ATOM = "http://export.arxiv.org/api/query"
 EPRINT_BASE = "https://arxiv.org/e-print"
@@ -41,7 +46,7 @@ NS_ATOM = {"atom": "http://www.w3.org/2005/Atom"}
 def _session() -> requests.Session:
     s = requests.Session()
     # Keep defaults simple; leave retries to our manual loop when needed
-    s.headers.update(UA)
+    s.headers.update(_user_agent_headers())
     return s
 
 
